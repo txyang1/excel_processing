@@ -112,3 +112,108 @@ for (pandas_row, col_name) in updated_cells:
 wb_updated.save(updated_file)
 
 print(f"更新完成，已生成 {updated_file}。在工作表 '{target_sheet}' 中已根据 Jira 数据更新了 Name、Owner、Defect finder 字段，并在 \"Octane or Jira\" 列中加入了 'jira' 标识，新更新的单元格均已高亮显示。")
+
+
+
+
+import pandas as pd
+from openpyxl import load_workbook
+from openpyxl.styles import PatternFill
+
+# ============================
+# 1. 参数设置
+# ============================
+original_file = "original.xlsx"          # 包含多个 sheet 的原始 Excel
+jira_file = "jira.csv"                   # Jira 的 CSV 文件
+target_sheet = "Octane and jira"         # 目标工作表
+updated_file = "updated_excel.xlsx"      # 更新后保存的文件
+
+# ============================
+# 2. 读取原始总表数据（只处理目标 sheet）
+# ============================
+df_original = pd.read_excel(original_file, sheet_name=target_sheet)
+
+# ============================
+# 3. 读取 Jira CSV 文件，并将字段映射为总表对应的字段名称
+# ============================
+df_jira = pd.read_csv(jira_file)
+
+# 定义映射：Jira 字段 -> 原总表字段
+rename_dict = {
+    "Summary": "Name",
+    "issue key": "Ticket no. supplier",
+    "Assignee": "Owner",
+    "Reporter": "Defect finder"
+}
+df_jira.rename(columns=rename_dict, inplace=True)
+
+# 只保留用于更新的字段；这里我们依赖 "Ticket no. supplier" 来关联其他字段
+update_fields = ["Name", "Owner", "Defect finder"]
+df_jira = df_jira[["Ticket no. supplier"] + update_fields]
+
+# ============================
+# 4. 合并原总表和 Jira 数据
+# ============================
+# 使用 "Ticket no. supplier" 作为关联键进行左合并，生成新列后缀 "_jira"
+df_merged = pd.merge(df_original, df_jira, on="Ticket no. supplier", how="left", suffixes=("", "_jira"))
+
+# ============================
+# 5. 根据条件更新：仅当原总表中对应字段为空时，从 Jira 数据更新
+# ============================
+# 用于记录更新的单元格（用于后续高亮显示），格式为：(pandas 行索引, 字段名称)
+updated_cells = []
+
+for idx, row in df_merged.iterrows():
+    for field in update_fields:
+        jira_val = row.get(f"{field}_jira")  # 来自 Jira 的值
+        orig_val = row.get(field)            # 原总表中的值
+        # 更新条件：如果原表字段为空（包括 NaN 或仅空白字符串）且 Jira 有非空数据，则更新
+        if ((pd.isnull(orig_val)) or (str(orig_val).strip() == "")) \
+           and pd.notnull(jira_val) and str(jira_val).strip() != "":
+            df_merged.at[idx, field] = jira_val
+            updated_cells.append((idx, field))
+
+# ============================
+# 6. 删除合并后多出来的 *_jira 辅助列，保留原总表列结构
+# ============================
+df_final = df_merged[df_original.columns]
+
+# ============================
+# 7. 将更新后的数据写入 Excel，保持其它 sheet 不变
+# ============================
+# 利用 openpyxl 载入整个工作簿
+wb = load_workbook(original_file)
+
+# 删除目标工作表以便重写数据
+if target_sheet in wb.sheetnames:
+    ws_to_remove = wb[target_sheet]
+    wb.remove(ws_to_remove)
+
+# 使用 pandas 的 ExcelWriter 写入更新后的目标 sheet（保留其他 sheet 不变）
+with pd.ExcelWriter(original_file, engine='openpyxl') as writer:
+    writer.book = wb
+    df_final.to_excel(writer, sheet_name=target_sheet, index=False)
+    writer.save()
+
+# 另存一份更新后的文件
+wb.save(updated_file)
+
+# ============================
+# 8. 高亮显示因 Jira 更新而填充的单元格（绿色高亮）
+# ============================
+wb_updated = load_workbook(updated_file)
+ws = wb_updated[target_sheet]
+
+# 定义绿色高亮填充
+highlight_fill = PatternFill(start_color='00FF00', end_color='00FF00', fill_type='solid')
+
+# 读取表头，Excel 第一行是表头；pandas 的行号与 Excel 行号存在偏移（pandas 行索引 0 对应 Excel 第2行）
+header = [cell.value for cell in ws[1]]
+for (pandas_row, col_name) in updated_cells:
+    excel_row = pandas_row + 2  # 加 2：1 为表头，pandas 行索引从 0 开始
+    if col_name in header:
+        excel_col = header.index(col_name) + 1  # openpyxl 列号从 1 开始
+        ws.cell(row=excel_row, column=excel_col).fill = highlight_fill
+
+wb_updated.save(updated_file)
+print(f"更新完成，已生成 {updated_file}。只有原表中为空的字段被 Jira 数据补充，并以绿色高亮显示。")
