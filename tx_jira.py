@@ -67,10 +67,12 @@ fund_function_mapping = {
     "stop and go at right of way situations [01.02.02.15.02.04]": "SGROW"
 }
 
+
 # -------------------------------
 # 4. 读取原表数据（目标工作表）和新表数据，构造追加的新行
 # -------------------------------
 df_orig = pd.read_excel(original_file, sheet_name=target_sheet)
+# 如果 CSV 文件日期列是 "Created"，请注意这里使用 read_csv 读取新文件
 df_new = pd.read_csv(new_file)
 orig_columns = list(df_orig.columns)
 
@@ -84,6 +86,17 @@ for idx, new_row in df_new.iterrows():
                 value = new_row.get(new_key, "")
                 if pd.isna(value):
                     value = ""
+                # 针对新文件中的 "Created" 字段进行日期转换处理
+                if new_key == "Created" and value:
+                    try:
+                        # 根据 CSV 中的日期格式解析日期
+                        dt = pd.to_datetime(value, format="%Y-%m-%d - %H:%M")
+                        # 将其格式化为 Excel 中的日期格式，例如 "m/d/yyyy h:mm:ss AM/PM"
+                        # Windows 用户可以使用 %#m/%#d/%Y %I:%M:%S %p，Linux/Mac 上使用 %-m/%-d/%Y %I:%M:%S %p
+                        value = dt.strftime("%#m/%#d/%Y %I:%M:%S %p")  # 如在 Windows 可使用 %#m/%#d/%Y %I:%M:%S %p
+                    except Exception as e:
+                        print(f"日期转换错误: {value} -> {e}")
+                        value = ""
                 row_data[col] = value
                 matched = True
                 break
