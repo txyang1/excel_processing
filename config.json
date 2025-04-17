@@ -1,0 +1,28 @@
+{
+  "paths": {
+    "original_file": "data/Ticket summary.xlsx",
+    "new_file":    "data/Octane_defects_filtered_4_10_2025_10_50_18_AM.xlsx",
+    "updated_file":"tx_updated_excel2.7.3.xlsx"
+  },
+  "sheet": {
+    "target_sheet": "Octane and jira"
+  },
+  "column_mapping": {
+    "ID": "ID",
+    "Ticket no. supplier": "Ticket no. supplier",
+    "Name": "Name",
+    "Closed in version": "Closed in version",
+    "Involved I-Step": "Involved I-Step"
+    /* …其余字段映射… */
+  },
+  "fund_function_mapping": {
+    "adapt speed to route geometry [01.02.02.15.02.14]": "ASRG",
+    "change lane [01.02.02.15.02.07]": "CL"
+    /* …其余映射… */
+  },
+  "owner_root_cause_mapping": {
+    "Niklas Haeuser": "Condition evaluate",
+    "Ruomeng Guan": "HPL"
+    /* …其余映射… */
+  }
+}
