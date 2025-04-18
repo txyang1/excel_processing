@@ -195,7 +195,7 @@ oir_idx = header2col.get("Octane or Jira")
 if oir_idx:
     fn  = os.path.basename(new_file)
     val = "Octane" if "Octane" in fn else ("Jira" if "Jira" in fn else "")
-    for r in range(2, max_row + 1):
+    for r in range(last_row, max_row + 1):
         ws.cell(r, oir_idx).value = val
 
 # 5.3 Open > 20 days
