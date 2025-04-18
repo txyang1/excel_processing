@@ -24,7 +24,7 @@ def find_last_data_row(ws, key_col):
     return 1
 
 # === 0. 读取配置 ===
-with open("config.json", "r", encoding="utf-8") as f:
+with open("unified_config.json", "r", encoding="utf-8") as f:
     cfg = json.load(f)
 
 paths    = cfg["paths"]
