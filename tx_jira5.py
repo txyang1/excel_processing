@@ -30,10 +30,11 @@ def find_last_data_row(ws, key_col):
 # -------------------------------
 # 1. 文件路径及参数
 # -------------------------------
-original_file = r"data\Ticket summary.xlsx"
-new_file      = r"data\EC-EF-2 tickets (CodeCraft Jira) 2025-04-10T05_00_40+0200.csv"
-updated_file  = "tx_jira_excel2.0.xlsx"
+original_file = r"data/Ticket summary (1).xlsx"
+new_file      = r"data/EC-EF-2 tickets (CodeCraft Jira) 2025-04-17T09_51_12+0200.csv"
+updated_file  = "tx_jira_5.xlsx"
 target_sheet  = "Octane and jira"
+
 
 # 映射关系：CSV 列 -> 原表列
 mapping = {
@@ -48,16 +49,80 @@ mapping = {
 
 # Fund→Function 映射
 fund_function_mapping = {
-    "adapt speed to route geometry [01.02.02.15.02.14]": "ASRG",
-    "change lane [01.02.02.15.02.07]":                  "CL",
-    "allow hands-off driving 130":                     "HOO130",
-    # …（其它映射）…
+   "adapt speed to route geometry [01.02.02.15.02.14]": "ASRG",
+    
+    "change lane [01.02.02.15.02.07]": "CL",
+    "Speed Limit Info 21.0 Mid [SLI21.0_Mi] [01.02.02.02.20]": "CL",
+   
+    "allow hands-off driving 130 [01.02.02.15.02.01]": "HOO130",
+    "allow hands-off driving 130 [01.02.02.15.02.01], allow hands-off driving 60 [01.02.02.15.02.02]": "HOO130",
+    
+    "keep distance [01.02.02.15.02.11]": "KD",
+    
+    "keep lane [01.02.02.15.02.10]": "KL/KLE",
+    "keep lane extended [01.02.02.15.02.08]": "KL/KLE",
+    "BS2": "Kl/KLE",
+    "Motion Planning [01.02.02.15.02.08.07], Motion Planning [01.02.02.15.02.10.08]": "Kl/KLE",
+    "Processing SRR - Detection  [01.02.01.02.08.03.01.13.05.02]": "Kl/KLE",
+   
+    "display assisted view [01.02.02.15.02.20]": "Adview",
+    
+    "stop and go at traffic lights [01.02.02.15.02.06]": "SGTL",
+    
+    "Speed Limit Info [SLI] (incl. No Passing Info)  [01.02.02.09.09.01]": "SLI",
+    "ADAS  Interaction with Navigation [01.04.03.01.03.01.01.04], FKT_display_settings_Speed_Limit_Info_SLI21.0_basis [01.02.02.01.03.01.01.03.02.03], Provide Navigation 2.0 [01.04.03.01.03.06]": "SLI",
+    "ADAS  Interaction with Navigation [01.04.03.01.03.01.01.04], FKT_display_settings_Speed_Limit_Info_SLI21.0_basis [01.02.02.01.03.01.03.02.02.04.02.03], Provide Navigation 2.0 [01.04.03.01.03.06]": "SLI",
+    
+    "indicate traffic sign and lights [01.02.02.15.03.01]": "TSLI",
+    
+    "ADAS  Interaction with Navigation [01.04.03.01.03.01.01.04],allow hands-off driving 130 [01.02.02.15.02.01]": "SAM-China",
+    
+    "Environment Detection for PA [01.02.02.15.04.03.01.03]": "Parking",
+    "Parking Assistant [01.02.02.15.04.03.01]": "Parking",
+    
+    "stop and go at right of way situations [01.02.02.15.02.04]": "SGROW",
+    
+    "Autonomous Emergency Braking [01.02.02.15.03.03]": "Kufu function test",
+    
+  
+    "Implement basic platform of Vehicle-to-Everything (V2X)": "V2X",
+   
+    "Processing SRR - Detection  [01.02.01.02.08.01.02.13.05.02]": "Safty",
+   
+    "ADAS  Interaction with Navigation [01.04.03.01.03.01.01.04]": "HOO-SAM",
+    "ADAS  Interaction with Navigation [01.04.03.01.03.01.01.04], Steering and Lane Control Assistant 3 [LSA3] [01.02.02.12.02.02]": "HOO-SAM",
+
 }
 
 # Owner→Root cause 映射
 owner_root_cause_mapping = {
-    "Niklas Haeuser": "Condition evaluate",
-    # …（其它映射）…
+    "Niklas Haeuser" :"Condition evaluate",
+    "Ruomeng Guan": "HPL",
+    "Cristina delVal": "Icon issue",
+    "Daniel Albetal": "IKS",
+    "Christoph Romainczyk": "Kufu function issue",
+    "Aifa Zhou": "Map issue",
+    "Zed Zhang": "Motion plan",
+    "zedzhang": "Motion plan",
+    "Matthias Stark": "Object fusion",
+    "JianLin Zhang": "Obstacle",
+    "Fabiao Wang": "Road model",
+    "Han Jia": "Road strategy",
+    "hanjia": "Road strategy",
+    "Juan Carlos Fuentes Michel": "SRR/MRR",
+    "juan-carlosfuentes-michel": "SRR/MRR",
+    "Meijie Fu": "GNSS",
+    "Bingchao Tang": "Traffic light fusion",
+    "Liang Xue": "Traffic sign fusion",
+
+    "Daniel Suerth": "CV issue",
+    "Ao Zhang": "CV issue",
+    "Fisher Yu": "CV issue",
+    "Tilmann Bidinger": "CV issue",
+    "Regine Graf-Roch": "CV issue",
+    "Katarzyna Rzonca": "CV issue",
+    "aozhangpartner": "CV issue",
+    "Ingo Yang": "CV issue"
 }
 
 # 高亮样式
@@ -79,7 +144,8 @@ trim_trailing_blank_rows(ws)
 # 构建表头→列号映射 & 列头列表
 header2col = {ws.cell(1, c).value: c for c in range(1, ws.max_column + 1)}
 headers    = [ws.cell(1, c).value for c in range(1, ws.max_column + 1)]
-
+id_col = header2col["ID"]
+original_last = find_last_data_row(ws, id_col)
 # 提取原表 ID→行号
 id_col = header2col["ID"]
 id2row = {
@@ -220,7 +286,7 @@ if days_idx and creation_idx:
 # 5.2 Octane or Jira 列 (CSV 来自 Jira)
 oir_idx = header2col.get("Octane or Jira")
 if oir_idx:
-    for r in range(2, max_row + 1):
+    for r in range(original_last+1, max_row + 1):
         ws.cell(r, oir_idx).value = "Jira"
 
 # 5.3 Open > 20 days 列
