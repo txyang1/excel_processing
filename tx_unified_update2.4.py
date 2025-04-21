@@ -181,7 +181,7 @@ for _, new_row in df_new.iterrows():
                                 val = tmp
                         else:
                             val = tmp
-                        if ok=="Target I-Step:" and (str(val).startswith("G070") or str(val).startswith("U006")):
+                        if ok=="Involved I-Step:" and (str(val).startswith("G070") or str(val).startswith("U006")):
                             val = "NA05"+str(val)[4:]
                     break
             cell = ws.cell(last_row, idx)
