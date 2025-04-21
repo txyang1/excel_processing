@@ -7,7 +7,7 @@ from openpyxl.utils import get_column_letter
 
 # === 辅助函数 ===
 def is_row_blank(ws, row):
-    for c in range(1, ws.max_column+1):
+    for c in range(1, ws.max_column + 1):
         if ws.cell(row, c).value not in (None, ""):
             return False
     return True
@@ -21,7 +21,7 @@ def trim_trailing_blank_rows(ws):
 
 def find_last_data_row(ws, key_col):
     for r in range(ws.max_row, 1, -1):
-        if ws.cell(r, key_col).value not in (None, ""):
+        if ws.cell(row=r, column=key_col).value not in (None, ""):
             return r
     return 1
 
@@ -39,11 +39,11 @@ sources  = cfg["sources"]
 fund_map = cfg["fund_function_mapping"]
 own_map  = cfg["owner_root_cause_mapping"]
 
-# === 1. 识别来源并加载配置 ===
+# === 1. 判断来源并加载 mapping ===
 base       = os.path.basename(new_fp)
 source_key = next((k for k,v in sources.items() if v["pattern"] in base), None)
 if not source_key:
-    raise RuntimeError("无法识别 new_file 来源 (Octane 或 Jira)")
+    raise RuntimeError("无法识别 new_file 来源")
 
 src_cfg    = sources[source_key]
 read_meth  = src_cfg["read_method"]
@@ -51,26 +51,23 @@ date_col   = src_cfg.get("date_col")
 mapping    = src_cfg["mapping"]
 
 # === 2. 读取新表 ===
-if read_meth == "excel":
-    df_new = pd.read_excel(new_fp)
-else:
-    df_new = pd.read_csv(new_fp)
+df_new = pd.read_excel(new_fp) if read_meth=="excel" else pd.read_csv(new_fp)
 
-# === 3. 打开原表并清除旧高亮 & 空行 ===
+# === 3. 打开原表，清除旧高亮 & 空行 ===
 wb = load_workbook(orig_fp)
 ws = wb[sheet]
 
-# 清掉之前的绿/黄高亮
-green_codes  = {"FF00FF00", "00FF00"}
-yellow_codes = {"FFFFFF00", "FFFF00"}
+# 清除之前留下的绿/黄
+green_codes  = {"FF00FF00","00FF00"} 
+yellow_codes = {"FFFFFF00","FFFF00"}
 for row in ws.iter_rows(min_row=2, min_col=1,
                         max_row=ws.max_row, max_col=ws.max_column):
     for cell in row:
         f = cell.fill
-        if f.fill_type == "solid":
-            col = f.fgColor.rgb or f.fgColor.value
-            if col in green_codes or col in yellow_codes:
-                cell.fill = PatternFill(fill_type=None)
+        if f.fill_type=="solid":
+            rgb = f.fgColor.rgb or f.fgColor.value
+            if rgb in green_codes or rgb in yellow_codes:
+                cell.fill=PatternFill(fill_type=None)
 
 trim_trailing_blank_rows(ws)
 
@@ -79,20 +76,23 @@ header2col = {ws.cell(1,c).value:c for c in range(1, ws.max_column+1)}
 headers    = list(header2col.keys())
 id_col     = header2col["ID"]
 
-# 原表已有 ID→行号
-id2row = {ws.cell(r,id_col).value:r for r in range(2, ws.max_row+1)
-          if ws.cell(r,id_col).value}
+# 记录已有 ID→行号
+id2row = {
+    ws.cell(r,id_col).value:r
+    for r in range(2, ws.max_row+1)
+    if ws.cell(r,id_col).value
+}
 
-# 准备新表ID→超链接（仅对 Excel 可用）
+# 如果是 Excel 来源，提取新表 ID→超链接
 id2url_new = {}
-if read_meth == "excel":
-    nwb = load_workbook(new_fp)
-    nws = nwb.active
-    id_col_new = next((c for c in range(1,nws.max_column+1)
-                       if nws.cell(1,c).value=="ID"), None)
-    if id_col_new:
+if read_meth=="excel":
+    nw = load_workbook(new_fp)
+    nws= nw.active
+    col_id = next((c for c in range(1,nws.max_column+1) 
+                   if nws.cell(1,c).value=="ID"), None)
+    if col_id:
         for r in range(2, nws.max_row+1):
-            c = nws.cell(r,id_col_new)
+            c = nws.cell(r,col_id)
             if c.hyperlink:
                 id2url_new[c.value] = c.hyperlink.target
 
@@ -100,21 +100,23 @@ if read_meth == "excel":
 last_row      = find_last_data_row(ws, id_col)
 original_last = last_row
 
-# 样式
+# 高亮样式
 green  = PatternFill("solid", fgColor="00FF00")
 yellow = PatternFill("solid", fgColor="FFFF00")
 
-# === 4. 更新或追加 ===
+# 找出映射中 ID 对应的源列名
 id_key = next(k for k,v in mapping.items() if v=="ID")
 
+# === 4. 遍历新表，更新 or 追加 ===
 for _, new_row in df_new.iterrows():
-    new_id = new_row.get(id_key, "")
+    new_id = new_row.get(id_key,"")
     if pd.isna(new_id) or not new_id:
         continue
 
     if new_id in id2row:
+        # —— 更新已有行，只更新非 Function 列 —— 
         r = id2row[new_id]
-        # 更新日期列（Jira 专用）
+        # 日期列（Jira）
         if date_col:
             raw = new_row.get(date_col,"")
             if pd.notna(raw) and raw!="":
@@ -123,15 +125,16 @@ for _, new_row in df_new.iterrows():
                     dt = ts.to_pydatetime()
                     c  = header2col[mapping[date_col]]
                     cell = ws.cell(r,c)
-                    if cell.value != dt:
+                    if cell.value!=dt:
                         cell.value = dt
                         cell.number_format = "m/d/yyyy h:mm:ss AM/PM"
                         cell.fill = green
                 except:
                     pass
-        # 更新映射字段
+        # 其它映射字段
         for nk, ok in mapping.items():
-            if nk == date_col: continue
+            if nk==date_col or ok=="Function":
+                continue
             val = new_row.get(nk,"")
             if pd.isna(val) or val=="": continue
             # 前缀替换
@@ -140,21 +143,10 @@ for _, new_row in df_new.iterrows():
             c = header2col.get(ok)
             if c:
                 cell = ws.cell(r,c)
-                if cell.value != val:
+                if cell.value!=val:
                     cell.value = val
                     cell.fill  = green
-        # 更新 Function 列（仅非 Octane）
-        if source_key != "Octane" and \
-           "Found in function" in header2col and "Function" in header2col:
-            fv = ws.cell(r,header2col["Found in function"]).value or ""
-            for k,v in fund_map.items():
-                if k in fv:
-                    c=header2col["Function"]
-                    cell=ws.cell(r,c)
-                    if cell.value!=v:
-                        cell.value=v; cell.fill=green
-                    break
-        # 更新 Root cause
+        # Root cause
         if "Owner" in header2col and "Root cause" in header2col:
             ow = ws.cell(r,header2col["Owner"]).value or ""
             for k,v in own_map.items():
@@ -166,17 +158,18 @@ for _, new_row in df_new.iterrows():
                     break
 
     else:
+        # —— 追加新行，包括 Function 列 —— 
         last_row += 1
-        for idx,hdr in enumerate(headers, start=1):
+        for idx, hdr in enumerate(headers, start=1):
             val = ""
-            for nk,ok in mapping.items():
+            for nk, ok in mapping.items():
                 if ok==hdr:
                     tmp = new_row.get(nk,"")
                     if pd.notna(tmp) and tmp!="":
                         # 日期
                         if hdr==mapping.get(date_col):
                             try:
-                                ts = pd.to_datetime(tmp)
+                                ts=pd.to_datetime(tmp)
                                 val=ts.to_pydatetime()
                             except:
                                 val=tmp
@@ -191,54 +184,56 @@ for _, new_row in df_new.iterrows():
             if val!="":
                 cell.fill = yellow
                 if hdr==mapping.get(date_col):
-                    cell.number_format = "m/d/yyyy h:mm:ss AM/PM"
+                    cell.number_format="m/d/yyyy h:mm:ss AM/PM"
         # 新行 ID 超链接
         url = id2url_new.get(new_id)
         if url:
-            c = id_col
+            c= id_col
             cell = ws.cell(last_row,c)
             cell.hyperlink = url
             cell.style     = "Hyperlink"
-        # 新行 Function & Root cause
+        # Function 列（只针对新行）
         if "Found in function" in header2col and "Function" in header2col:
-            fv=new_row.get("Found in function","") or ""
+            fv = new_row.get("Found in function","") or ""
             for k,v in fund_map.items():
                 if k in fv:
                     c=header2col["Function"]
-                    ws.cell(last_row,c).value=v
-                    ws.cell(last_row,c).fill=yellow
+                    ws.cell(last_row,c).value = v
+                    ws.cell(last_row,c).fill  = yellow
                     break
+        # Root cause
         if "Owner" in header2col and "Root cause" in header2col:
-            ow=new_row.get("Owner","") or ""
+            ow = new_row.get("Owner","") or ""
             for k,v in own_map.items():
                 if k in ow:
                     c=header2col["Root cause"]
-                    ws.cell(last_row,c).value=v
-                    ws.cell(last_row,c).fill=yellow
+                    ws.cell(last_row,c).value = v
+                    ws.cell(last_row,c).fill  = yellow
                     break
 
-# === 5. 填公式 & Octane/Jira 标记 ===
+# === 5. 填公式 & 标记新增行 Octane/Jira ===
 max_row = ws.max_row
 
 # Days
-d_idx = header2col.get("Days"); ct_idx=header2col.get("Creation time")
+d_idx  = header2col.get("Days")
+ct_idx = header2col.get("Creation time")
 if d_idx and ct_idx:
     colL = get_column_letter(ct_idx)
     for r in range(2, max_row+1):
         ws.cell(r,d_idx).value = f'=DATEDIF(${colL}{r},TODAY(),"D")'
 
-# Octane or Jira （仅新行）
+# Octane/Jira 列（仅新行）
 oij_idx = header2col.get("Octane or Jira")
 if oij_idx:
     for r in range(original_last+1, max_row+1):
         ws.cell(r,oij_idx).value = source_key
 
-# Open > 20 days
+# Open >20 days
 o20 = header2col.get("Open >20 days") or header2col.get("Open > 20 days")
 if o20 and d_idx:
-    colD = get_column_letter(d_idx)
+    cd = get_column_letter(d_idx)
     for r in range(2, max_row+1):
-        ws.cell(r,o20).value = f'=IF({colD}{r}>20,1,0)'
+        ws.cell(r,o20).value = f'=IF({cd}{r}>20,1,0)'
 
 # No TIS
 nt = header2col.get("No TIS")
