@@ -1,0 +1,124 @@
+{
+    "paths": {
+      "original_file": "tx_updated_summary_octane2.4.2.xlsx",
+      "new_file":      "data/EC-EF-2 tickets (CodeCraft Jira) 2025-04-21T04_47_05+0200.csv",
+      "updated_file":  "tx_updated_summary_octane2.4.2_jira_Y.xlsx"
+    },
+    "settings":{"clear_old_highlight":"Y"},
+    "sheet": {
+      "target_sheet": "Octane and jira"
+    },
+    "sources": {
+      "Octane": {
+        "pattern": "Octane",
+        "read_method": "excel",
+        "date_col": null,
+        "mapping": {
+            "ID": "ID",
+            "Ticket no. supplier": "Ticket no. supplier",
+            "Name": "Name",
+            "Closed in version": "Closed in version",
+            "Involved I-Step": "Involved I-Step",
+            "First use/SoP of function": "First use/SoP of function",
+            "Creation time": "Creation time",
+            "Error occurrence": "Error occurrence",
+            "Phase": "Phase",
+            "Found in function": "Found in function",
+            "Defect finder": "Defect finder",
+            "Owner": "Owner",
+            "Target I-Step": "Target I-Step:",
+            "Target Week": "Follow up",
+            "Planned closing version": "Planned closing version",
+            "Days in phase": "Days in the pahse"
+        }
+      },
+      "Jira": {
+        "pattern": "Jira",
+        "read_method": "csv",
+        "date_col": "Created",
+        "mapping": {
+            "Issue key": "ID",
+            "Created": "Creation time",
+            "Summary": "Name",
+            "Status": "Phase",
+            "Reporter": "Defect finder",
+            "Assignee": "Owner",
+            "Affects Version/s": "Target I-Step:"
+        }
+      }
+    },
+    "fund_function_mapping": {
+        "adapt speed to route geometry [01.02.02.15.02.14]": "ASRG",
+    
+        "change lane [01.02.02.15.02.07]": "CL",
+        "Speed Limit Info 21.0 Mid [SLI21.0_Mi] [01.02.02.02.20]": "CL",
+       
+        "allow hands-off driving 130 [01.02.02.15.02.01]": "HOO130",
+        "allow hands-off driving 130 [01.02.02.15.02.01], allow hands-off driving 60 [01.02.02.15.02.02]": "HOO130",
+        
+        "keep distance [01.02.02.15.02.11]": "KD",
+        
+        "keep lane [01.02.02.15.02.10]": "KL/KLE",
+        "keep lane extended [01.02.02.15.02.08]": "KL/KLE",
+        "BS2": "Kl/KLE",
+        "Motion Planning [01.02.02.15.02.08.07], Motion Planning [01.02.02.15.02.10.08]": "Kl/KLE",
+        "Processing SRR - Detection  [01.02.01.02.08.03.01.13.05.02]": "Kl/KLE",
+       
+        "display assisted view [01.02.02.15.02.20]": "Adview",
+        
+        "stop and go at traffic lights [01.02.02.15.02.06]": "SGTL",
+        
+        "Speed Limit Info [SLI] (incl. No Passing Info)  [01.02.02.09.09.01]": "SLI",
+        "ADAS  Interaction with Navigation [01.04.03.01.03.01.01.04], FKT_display_settings_Speed_Limit_Info_SLI21.0_basis [01.02.02.01.03.01.01.03.02.03], Provide Navigation 2.0 [01.04.03.01.03.06]": "SLI",
+        "ADAS  Interaction with Navigation [01.04.03.01.03.01.01.04], FKT_display_settings_Speed_Limit_Info_SLI21.0_basis [01.02.02.01.03.01.03.02.02.04.02.03], Provide Navigation 2.0 [01.04.03.01.03.06]": "SLI",
+        
+        "indicate traffic sign and lights [01.02.02.15.03.01]": "TSLI",
+        
+        "ADAS  Interaction with Navigation [01.04.03.01.03.01.01.04],allow hands-off driving 130 [01.02.02.15.02.01]": "SAM-China",
+        
+        "Environment Detection for PA [01.02.02.15.04.03.01.03]": "Parking",
+        "Parking Assistant [01.02.02.15.04.03.01]": "Parking",
+        
+        "stop and go at right of way situations [01.02.02.15.02.04]": "SGROW",
+        
+        "Autonomous Emergency Braking [01.02.02.15.03.03]": "Kufu function test",
+        
+      
+        "Implement basic platform of Vehicle-to-Everything (V2X)": "V2X",
+       
+        "Processing SRR - Detection  [01.02.01.02.08.01.02.13.05.02]": "Safty",
+       
+        "ADAS  Interaction with Navigation [01.04.03.01.03.01.01.04]": "HOO-SAM",
+        "ADAS  Interaction with Navigation [01.04.03.01.03.01.01.04], Steering and Lane Control Assistant 3 [LSA3] [01.02.02.12.02.02]": "HOO-SAM"
+    
+    },
+    "owner_root_cause_mapping": {
+        "Niklas Haeuser" :"Condition evaluate",
+        "Ruomeng Guan": "HPL",
+        "Cristina delVal": "Icon issue",
+        "Daniel Albetal": "IKS",
+        "Christoph Romainczyk": "Kufu function issue",
+        "Aifa Zhou": "Map issue",
+        "Zed Zhang": "Motion plan",
+        "zedzhang": "Motion plan",
+        "Matthias Stark": "Object fusion",
+        "JianLin Zhang": "Obstacle",
+        "Fabiao Wang": "Road model",
+        "Han Jia": "Road strategy",
+        "hanjia": "Road strategy",
+        "Juan Carlos Fuentes Michel": "SRR/MRR",
+        "juan-carlosfuentes-michel": "SRR/MRR",
+        "Meijie Fu": "GNSS",
+        "Bingchao Tang": "Traffic light fusion",
+        "Liang Xue": "Traffic sign fusion",
+    
+        "Daniel Suerth": "CV issue",
+        "Ao Zhang": "CV issue",
+        "Fisher Yu": "CV issue",
+        "Tilmann Bidinger": "CV issue",
+        "Regine Graf-Roch": "CV issue",
+        "Katarzyna Rzonca": "CV issue",
+        "aozhangpartner": "CV issue",
+        "Ingo Yang": "CV issue"
+    }
+  }
