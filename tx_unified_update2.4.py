@@ -62,6 +62,7 @@ ws = wb[sheet]
 if clear_flag == "Y":
     purple_codes = {"FF800080", "800080","00800080"}  # 新增用紫色
     blue_codes   = {"FFADD8E6", "ADD8E6","00ADD8E6"}  # 更新用蓝色
+    gray_codes = {"FFC0C0C0","C0C0C0","00C0C0C0"} #灰色
 
     for row in ws.iter_rows(min_row=2, min_col=1,
                             max_row=ws.max_row, max_col=ws.max_column):
@@ -69,7 +70,7 @@ if clear_flag == "Y":
             f = cell.fill
             if f.fill_type == "solid":
                 col = f.fgColor.rgb or f.fgColor.value
-                if col in purple_codes or col in blue_codes:
+                if col in purple_codes or col in blue_codes or col in gray_codes:
                     cell.fill = PatternFill(fill_type=None)
 
 trim_trailing_blank_rows(ws)
@@ -143,7 +144,7 @@ for _, new_row in df_new.iterrows():
             val = new_row.get(nk,"")
             if pd.isna(val) or val=="": 
                 continue
-            if ok=="Target I-Step:" and (str(val).startswith("G070") or str(val).startswith("U006")):
+            if  ok =="Involved I-Step" and (str(val).startswith("G070") or str(val).startswith("U006")):
                 val = "NA05"+str(val)[4:]
             c = header2col.get(ok)
             if c:
@@ -181,7 +182,7 @@ for _, new_row in df_new.iterrows():
                                 val = tmp
                         else:
                             val = tmp
-                        if ok=="Involved I-Step:" and (str(val).startswith("G070") or str(val).startswith("U006")):
+                        if ok=="Target I-Step:" and (str(val).startswith("G070") or str(val).startswith("U006")):
                             val = "NA05"+str(val)[4:]
                     break
             cell = ws.cell(last_row, idx)
@@ -251,6 +252,24 @@ if nt and pl and ti:
     tL = get_column_letter(ti)
     for r in range(2, max_row+1):
         ws.cell(r, nt).value = f'=IF(OR({pL}{r}<>"",{tL}{r}<>""),0,1)'
+
+#Top issue
+tags_idx = header2col.get("Tags")
+top_idx =  header2col.get("Top issue Candidiate")
+gray_fill = PatternFill("solid", fgColor="C0C0C0")
+
+if tags_idx and top_idx:
+    for r in range(2,max_row+1):
+        tags_val = ws.cell(r, tags_idx).value or ""
+        top_cell = ws.cell(r, top_idx)
+        top_val = top_cell.value or ""
+        if "IPN_CN_TopIssue" in tags_val:
+            if top_val == "":
+                top_cell.value = "Yes"
+                top_cell.fill = purple_fill
+        else:
+            if top_val == "Yes":
+                top_cell.fill = gray_fill
 
 # === 6. 保存 ===
 wb.save(upd_fp)
