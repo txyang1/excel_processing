@@ -1,10 +1,10 @@
 {
     "paths": {
-      "original_file": "tx_updated_summary_octane2.4.2.xlsx",
+      "original_file": "tx_updated_summary_octane2.4.5.xlsx",
       "new_file":      "data/EC-EF-2 tickets (CodeCraft Jira) 2025-04-21T04_47_05+0200.csv",
-      "updated_file":  "tx_updated_summary_octane2.4.2_jira_Y.xlsx"
+      "updated_file":  "tx_updated_summary_octane2.4.5_jira.xlsx"
     },
-    "settings":{"clear_old_highlight":"Y"},
+    "settings":{"clear_old_highlight":"N"},
     "sheet": {
       "target_sheet": "Octane and jira"
     },
@@ -95,30 +95,38 @@
     "owner_root_cause_mapping": {
         "Niklas Haeuser" :"Condition evaluate",
         "Ruomeng Guan": "HPL",
+        "ruomengguan": "HPL",
         "Cristina delVal": "Icon issue",
         "Daniel Albetal": "IKS",
         "Christoph Romainczyk": "Kufu function issue",
         "Aifa Zhou": "Map issue",
+        "aifazhou": "Map issue",
         "Zed Zhang": "Motion plan",
         "zedzhang": "Motion plan",
         "Matthias Stark": "Object fusion",
         "JianLin Zhang": "Obstacle",
+        "jianlinzhang": "Obstacle",
         "Fabiao Wang": "Road model",
+        "fabiaowang": "Road model",
         "Han Jia": "Road strategy",
         "hanjia": "Road strategy",
         "Juan Carlos Fuentes Michel": "SRR/MRR",
         "juan-carlosfuentes-michel": "SRR/MRR",
         "Meijie Fu": "GNSS",
+        "meijiefu": "GNSS",
         "Bingchao Tang": "Traffic light fusion",
+        "bingchaotang": "Traffic light fusion",
         "Liang Xue": "Traffic sign fusion",
+        "liangxue": "Traffic sign fusion",
     
         "Daniel Suerth": "CV issue",
         "Ao Zhang": "CV issue",
+        "aozhangpartner": "CV issue",
         "Fisher Yu": "CV issue",
         "Tilmann Bidinger": "CV issue",
         "Regine Graf-Roch": "CV issue",
         "Katarzyna Rzonca": "CV issue",
-        "aozhangpartner": "CV issue",
+        
         "Ingo Yang": "CV issue"
     }
   }
