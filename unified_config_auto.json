@@ -1,0 +1,102 @@
+{
+  "paths": {
+    "original_file": "Ticket summary3.xlsx",
+    "new_file":      "",
+    "updated_file":  "tx_auto_updated_excel.xlsx"
+  },
+  "folders": {
+    "base_dir": "C:/Users/qxz5y3m/OneDrive - BMW Group",
+    "orig_dir": "BK25 AD team CN - 01_PbM defects weekly review",
+    "jira_dir": "PbM topic - Jira raw data",
+    "octane_dir": "PbM topic - Octane raw data"
+  },
+  "settings":{"clear_old_highlight":"N"},
+  "sheet": {
+    "target_sheet": "Octane and jira"
+  },
+  "sources": {
+    "Octane": {
+      "pattern": "Octane",
+      "read_method": "excel",
+      "date_col": null,
+      "mapping": {
+          "ID": "ID",
+          "Ticket no. supplier": "Ticket no. supplier",
+          "Name": "Name",
+          "Closed in version": "Closed in version",
+          "Involved I-Step": "Involved I-Step",
+          "First use/SoP of function": "First use/SoP of function",
+          "Creation time": "Creation time",
+          "Error occurrence": "Error occurrence",
+          "Phase": "Phase",
+          "Found in function": "Found in function",
+          "Defect finder": "Defect finder",
+          "Owner": "Owner",
+          "Target I-Step": "Target I-Step:",
+          "Target Week": "Follow up",
+          "Planned closing version": "Planned closing version",
+          "Days in phase": "Days in the pahse",
+          "Tags": "Tags"
+      }
+    },
+    "Jira": {
+      "pattern": "Jira",
+      "read_method": "csv",
+      "date_col": "Created",
+      "mapping": {
+          "Issue key": "ID",
+          "Created": "Creation time",
+          "Summary": "Name",
+          "Status": "Phase",
+          "Reporter": "Defect finder",
+          "Assignee": "Owner",
+          "Affects Version/s": "Target I-Step:",
+          "Priority": "Priority"
+      }
+    }
+  },
+  "fund_function_patterns":{
+    "ASRG":["adapt speed to route geometry [01.02.02.15.02.14]"],
+    "CL": [ "change lane [01.02.02.15.02.07]","Speed Limit Info 21.0 Mid [SLI21.0_Mi] [01.02.02.02.20]"],
+    "HOO130": ["allow hands-off driving 130 [01.02.02.15.02.01]", "allow hands-off driving 130 [01.02.02.15.02.01], allow hands-off driving 60 [01.02.02.15.02.02]"],
+    "KD": ["keep distance [01.02.02.15.02.11]"],
+    "KL/KLE": ["keep lane [01.02.02.15.02.10]","keep lane extended [01.02.02.15.02.08]","BS2","Motion Planning [01.02.02.15.02.08.07], Motion Planning [01.02.02.15.02.10.08]","Processing SRR - Detection  [01.02.01.02.08.03.01.13.05.02]"],
+    "Adview": ["display assisted view [01.02.02.15.02.20]"],
+    "SGTL": ["stop and go at traffic lights [01.02.02.15.02.06]"],
+    "SLI": ["Speed Limit Info [SLI] (incl. No Passing Info)  [01.02.02.09.09.01]","ADAS  Interaction with Navigation [01.04.03.01.03.01.01.04], FKT_display_settings_Speed_Limit_Info_SLI21.0_basis"],
+    "TSLI": ["indicate traffic sign and lights [01.02.02.15.03.01]"],
+    "SAM-China": ["ADAS  Interaction with Navigation [01.04.03.01.03.01.01.04], allow hands-off driving 130 [01.02.02.15.02.01]"],
+    "Parking": ["Environment Detection for PA [01.02.02.15.04.03.01.03]", "Parking Assistant [01.02.02.15.04.03.01]"],
+    "SGROW": ["stop and go at right of way situations [01.02.02.15.02.04]"],
+    "Kufu function test": ["Autonomous Emergency Braking [01.02.02.15.03.03]"],
+    "V2X": ["Implement basic platform of Vehicle-to-Everything (V2X)"],
+    "Safty": ["Processing SRR - Detection  [01.02.01.02.08.01.02.13.05.02]"],
+    "HOO-SAM": ["ADAS  Interaction with Navigation [01.04.03.01.03.01.01.04]"]
+  },
+  "owner_root_cause_patterns": {
+    "Condition evaluate": ["Niklas Haeuser", "Rick Yu"],
+    "HPL": ["Ruomeng Guan","ruomengguan"],
+    "Icon issue": ["Cristina delVal"],
+    "IKS": ["Daniel Albetal"],
+    "Kufu function issue": ["Christoph Romainczyk"],
+    "Map issue": ["Aifa Zhou","aifazhou"],
+    "Motion plan": ["Zed Zhang","zedzhang"],
+    "Object fusion": ["Matthias Stark", "Qiguang Ji", "qiguangji"],
+    "Obstacle": ["JianLin Zhang","jianlinzhang", "Fenggen Hu", "fenggenhu"],
+    "Road model": ["Fabiao Wang", "fabiaowang",
+                    "MoRan Dang","morandang",
+                    "Iris Wang","iriswiwangpartner"],
+    "Road strategy": ["Han Jia", "hanjia"],
+    "SRR/MRR": ["Juan Carlos Fuentes Michel", "juan-carlosfuentes-michel", "Thomas Sauer"],
+    "GNSS": ["Meijie Fu", "meijiefu"],
+    "Traffic light fusion": ["Bingchao Tang", "bingchaotang", "Leona Xu","leonaxu"],
+    "Traffic sign fusion": ["Liang Xue", "liangxue", "Raymond Huang", "raymondhuang"],
+    "Prediction": ["Dongfei Xue", "dongfeixue"],
+    "LLP Objects, SemSeg": ["Haiming Huang", "haiminghuang"],
+    "Driving Tube": ["Xianli Deng", "xianlideng"],
+    "CV issue": ["Ingo Yang","Daniel Suerth", 
+                "Ao Zhang", "aozhangpartner", 
+                "Fisher Yu", "Tilmann Bidinger",
+                "Regine Graf-Roch", "Katarzyna Rzonca"]
+  }
+}
