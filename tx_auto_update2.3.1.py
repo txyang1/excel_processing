@@ -239,3 +239,39 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+
+from watchdog.events import FileSystemEventHandler
+
+class FolderHandler(FileSystemEventHandler):
+    def __init__(self, folders):
+        self.folders = folders
+
+    def on_created(self, event):
+        self._maybe_update(event.src_path)
+
+    on_modified = on_created
+
+    def on_moved(self, event):
+        self._maybe_update(event.dest_path)
+
+    def _maybe_update(self, path):
+        if os.path.isdir(path):
+            return
+        fld = os.path.basename(os.path.dirname(path))
+        if fld in (self.folders['jira_dir'], self.folders['octane_dir']):
+            update_excel(path)
+
+
+
+from watchdog.observers.polling import PollingObserver as Observer
+
+def main():
+    …  
+    observer = Observer()
+    handler  = FolderHandler(folders)
+    observer.schedule(handler, path=JIRA_DIR, recursive=False)
+    observer.schedule(handler, path=OCTANE_DIR, recursive=False)
+    …
+
