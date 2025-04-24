@@ -274,6 +274,16 @@ if nt and pl and ti:
     for r in range(2, max_row + 1):
         ws.cell(r, nt).value = f'=IF(OR({pL}{r}<>"",{tL}{r}<>""),0,1)'
 
+br_idx  = header2col.get("Blocking reason")
+ph_idx  = header2col.get("Phase")
+rej_idx = header2col.get("Rejected ticket")
+
+if br_idx and ph_idx and rej_idx:
+    for r in range(2, ws.max_row + 1):
+        br_val = ws.cell(r, br_idx).value
+        ph_val = str(ws.cell(r, ph_idx).value or "")
+        ws.cell(r, rej_idx).value = 1 if (br_val not in (None, "") and "New" in ph_val) else 0
+
 # === 6. 保存 ===
 wb.save(upd_fp)
 print(f"更新完成 (来源={source_key})，新增行粉色，高亮；更新行淡蓝，高亮。结果已保存至 '{upd_fp}'.")
