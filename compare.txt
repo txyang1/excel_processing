@@ -1,6 +1,17 @@
-Sub AlignAndHighlight()
+'—— 在模块里加入这个辅助函数 ——
+Function NormalizeID(s As Variant) As String
+    Dim t As String
+    t = Trim(CStr(s))                ' 去掉两边空格
+    ' 如果是纯数字 ID，就去掉多余的前导零
+    If IsNumeric(t) Then
+        t = CStr(Val(t))
+    End If
+    NormalizeID = t
+End Function
+
+Sub AlignAndHighlight_Normalized()
     Dim ws As Worksheet, ws2 As Worksheet
-    Set ws = ThisWorkbook.Sheets("Sheet1")     ' 原始数据表，ID 在 A 列，ID2 在 B 列
+    Set ws = ThisWorkbook.Sheets("Sheet1")   ' 源数据
     On Error Resume Next
     Set ws2 = ThisWorkbook.Sheets("Aligned")
     If ws2 Is Nothing Then
@@ -10,50 +21,49 @@ Sub AlignAndHighlight()
         ws2.Cells.Clear
     End If
     On Error GoTo 0
-    
-    ' 读原始范围
+
     Dim lastA As Long, lastB As Long
     lastA = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
     lastB = ws.Cells(ws.Rows.Count, "B").End(xlUp).Row
-    
+
     Dim dict As Object: Set dict = CreateObject("Scripting.Dictionary")
-    Dim c As Range
-    
-    ' 把 ID2 全部装入字典
+    Dim c As Range, key As String
+
+    ' 用归一化后值做字典 key
     For Each c In ws.Range("B2:B" & lastB)
-        If Not dict.Exists(c.Value) Then dict(c.Value) = True
+        key = NormalizeID(c.Value)
+        If Len(key) > 0 Then dict(key) = c.Value   ' 存原始 B 值以便输出
     Next
-    
-    ' 输出表头
+
     ws2.Range("A1").Value = "ID"
     ws2.Range("B1").Value = "ID2"
-    
     Dim outR As Long: outR = 2
-    
-    ' 第一遍：按 ID 列输出，若在字典里就配对并删除
+
+    ' 第一次：按 A 列输出，同时尝试从字典配对
     For Each c In ws.Range("A2:A" & lastA)
         ws2.Cells(outR, 1).Value = c.Value
-        If dict.Exists(c.Value) Then
-            ws2.Cells(outR, 2).Value = c.Value
-            dict.Remove c.Value
+        key = NormalizeID(c.Value)
+        If dict.Exists(key) Then
+            ws2.Cells(outR, 2).Value = dict(key)
+            dict.Remove key
         End If
         outR = outR + 1
     Next
-    
-    ' 第二遍：剩余的 ID2，填充到 ID2 列
+
+    ' 第二次：输出剩余 B 中没配对的
     Dim k
     For Each k In dict.Keys
-        ws2.Cells(outR, 2).Value = k
+        ws2.Cells(outR, 2).Value = dict(k)
         outR = outR + 1
     Next
-    
-    ' 条件格式：高亮左右不等的行
+
+    ' 高亮不一致行
     With ws2.Range("A2:B" & outR - 1)
         .FormatConditions.Delete
         .FormatConditions.Add Type:=xlExpression, _
             Formula1:="=$A2<>$B2"
         .FormatConditions(1).Interior.Color = RGB(255, 255, 200)
     End With
-    
-    MsgBox "已在表 'Aligned' 中生成对齐并高亮结果！", vbInformation
+
+    MsgBox "对齐完成，并已高亮不匹配项！", vbInformation
 End Sub
