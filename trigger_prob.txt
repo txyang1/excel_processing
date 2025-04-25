@@ -1,0 +1,11 @@
+Please enter the path to the excel folder: CW17                                                                            
+Please enter the timestamp (e.g. 20250421_0905) 20250425_0123                                                              
+Please enter istep and CW  (e.g. 490CW16) 490CW17                                                                          
+Traceback (most recent call last):
+  File "c:/Users/qxz5y3m/excel_code/excellerator 1.py", line 113, in <module>
+    summary_df.to_excel(summary_file_path, index=False, engine='openpyxl', sheet_name='TRIGGER')
+  File "C:\Users\qxz5y3m\excel_code\excel\lib\site-packages\pandas\core\generic.py", line 2291, in to_excel
+    storage_options=storage_options,
+  File "C:\Users\qxz5y3m\excel_code\excel\lib\site-packages\pandas\io\formats\excel.py", line 824, in write
+    f"This sheet is too large! Your sheet size is: {num_rows}, {num_cols} "
+ValueError: This sheet is too large! Your sheet size is: 1048930, 35 Max sheet size is: 1048576, 16384
