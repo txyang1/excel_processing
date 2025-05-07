@@ -1,40 +1,7 @@
-PS C:\Users\qxz5y3m\excel_code> & c:/Users/qxz5y3m/excel_code/excel/Scripts/Activate.ps1
-(excel) PS C:\Users\qxz5y3m\excel_code> & c:/Users/qxz5y3m/excel_code/excel/Scripts/python.exe "c:/Users/qxz5y3m/OneDrive - BMW Group/tx_auto_update2.3.1.py"                                                                                         
-监控：c:\Users\qxz5y3m\OneDrive - BMW Group\PbM topic - Jira raw data, c:\Users\qxz5y3m\OneDrive - BMW Group\PbM topic - Octane raw data                                                                                                              
-已设定每日 08:00 全量扫描更新。                                                                                            
-[20250423_164608] 开始更新: c:\Users\qxz5y3m\OneDrive - BMW Group\PbM topic - Jira raw data\tx_EC-EF-2 tickets (CodeCraft Jira) 2025-04-23T04_00_39+0200.csv
-[2025-04-23 16:46:12] 完成，保存至 c:\Users\qxz5y3m\OneDrive - BMW Group\PbM topic - Jira raw data\tx_auto_updated_20250423_164608_jira_Y_octane_N.xlsx
-[20250423_164612] 开始更新: c:\Users\qxz5y3m\OneDrive - BMW Group\PbM topic - Jira raw data\tx_auto_updated_20250423_164608_jira_Y_octane_N.xlsx
-Exception in thread Thread-1:
-Traceback (most recent call last):
-  File "C:\Program Files\Python37\lib\threading.py", line 926, in _bootstrap_inner
-    self.run()
-  File "C:\Users\qxz5y3m\excel_code\excel\lib\site-packages\watchdog\observers\api.py", line 204, in run
-    self.dispatch_events(self.event_queue)
-  File "C:\Users\qxz5y3m\excel_code\excel\lib\site-packages\watchdog\observers\api.py", line 380, in dispatch_events       
-    handler.dispatch(event)
-  File "C:\Users\qxz5y3m\excel_code\excel\lib\site-packages\watchdog\events.py", line 283, in dispatch
-    }[event.event_type](event)
-  File "c:/Users/qxz5y3m/OneDrive - BMW Group/tx_auto_update2.3.1.py", line 322, in on_created
-    self._maybe_update(event.src_path)
-  File "c:/Users/qxz5y3m/OneDrive - BMW Group/tx_auto_update2.3.1.py", line 334, in _maybe_update
-    update_excel(path)
-  File "c:/Users/qxz5y3m/OneDrive - BMW Group/tx_auto_update2.3.1.py", line 93, in update_excel
-    df_new = pd.read_excel(new_fp) if read_meth=="excel" else pd.read_csv(new_fp)
-  File "C:\Users\qxz5y3m\excel_code\excel\lib\site-packages\pandas\util\_decorators.py", line 311, in wrapper
-    return func(*args, **kwargs)
-  File "C:\Users\qxz5y3m\excel_code\excel\lib\site-packages\pandas\io\parsers\readers.py", line 586, in read_csv
-    return _read(filepath_or_buffer, kwds)
-  File "C:\Users\qxz5y3m\excel_code\excel\lib\site-packages\pandas\io\parsers\readers.py", line 482, in _read
-    parser = TextFileReader(filepath_or_buffer, **kwds)
-  File "C:\Users\qxz5y3m\excel_code\excel\lib\site-packages\pandas\io\parsers\readers.py", line 811, in __init__
-    self._engine = self._make_engine(self.engine)
-  File "C:\Users\qxz5y3m\excel_code\excel\lib\site-packages\pandas\io\parsers\readers.py", line 1040, in _make_engine      
-    return mapping[engine](self.f, **self.options)  # type: ignore[call-arg]
-  File "C:\Users\qxz5y3m\excel_code\excel\lib\site-packages\pandas\io\parsers\c_parser_wrapper.py", line 69, in __init__   
-    self._reader = parsers.TextReader(self.handles.handle, **kwds)
-  File "pandas\_libs\parsers.pyx", line 542, in pandas._libs.parsers.TextReader.__cinit__
-  File "pandas\_libs\parsers.pyx", line 642, in pandas._libs.parsers.TextReader._get_header
-  File "pandas\_libs\parsers.pyx", line 843, in pandas._libs.parsers.TextReader._tokenize_rows
-  File "pandas\_libs\parsers.pyx", line 1917, in pandas._libs.parsers.raise_parser_error
-UnicodeDecodeError: 'utf-8' codec can't decode byte 0x97 in position 12: invalid start byte
+PTraceback (most recent call last):
+  File "refresh_pivot2.py", line 66, in <module>
+    refresh_pivots(sys.argv[1])
+  File "refresh_pivot2.py", line 53, in refresh_pivots
+    pt.ChangePivotCache(cache)
+  File "<COMObject <unknown>>", line 2, in ChangePivotCache
+pywintypes.com_error: (-2147352567, 'Exception occurred.', (0, 'Microsoft Excel', "This command requires at least two rows of source data. You cannot use the command on a selection in only one row. Try the following:\n\n• If you're using an advanced filter, select a range of cells that contains at least two rows of data. Then click the Advanced Filter command again.\n• If you're creating a PivotTable report or PivotChart report, type a cell reference or select a range that includes at least two rows of data.", 'xlmain11.chm', 0, -2147024809), None)
