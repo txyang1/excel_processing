@@ -1,5 +1,12 @@
 Exception in thread Thread-1:
 Traceback (most recent call last):
+  File "C:\Users\qxz5y3m\excel_code\excel\lib\site-packages\win32com\client\gencache.py", line 631, in EnsureDispatch
+    ti = disp._oleobj_.GetTypeInfo()
+pywintypes.com_error: (-2147418111, 'Call was rejected by callee.', None, None)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
   File "C:\Program Files\Python37\lib\threading.py", line 926, in _bootstrap_inner
     self.run()
   File "C:\Users\qxz5y3m\excel_code\excel\lib\site-packages\watchdog\observers\api.py", line 204, in run
@@ -8,14 +15,14 @@ Traceback (most recent call last):
     handler.dispatch(event)
   File "C:\Users\qxz5y3m\excel_code\excel\lib\site-packages\watchdog\events.py", line 283, in dispatch
     }[event.event_type](event)
-  File "c:/Users/qxz5y3m/OneDrive - BMW Group/tx_auto_update2.3.1.2.py", line 439, in on_created
+  File "c:/Users/qxz5y3m/OneDrive - BMW Group/tx_auto_update2.3.1.2.py", line 530, in on_created
     self._maybe_update(event.src_path)
-  File "c:/Users/qxz5y3m/OneDrive - BMW Group/tx_auto_update2.3.1.2.py", line 451, in _maybe_update
+  File "c:/Users/qxz5y3m/OneDrive - BMW Group/tx_auto_update2.3.1.2.py", line 542, in _maybe_update
     update_excel(path)
-  File "c:/Users/qxz5y3m/OneDrive - BMW Group/tx_auto_update2.3.1.2.py", line 431, in update_excel
+  File "c:/Users/qxz5y3m/OneDrive - BMW Group/tx_auto_update2.3.1.2.py", line 522, in update_excel
     _refresh_pivots_in_workbook(orig_fp, sheet)
-  File "c:/Users/qxz5y3m/OneDrive - BMW Group/tx_auto_update2.3.1.2.py", line 67, in _refresh_pivots_in_workbook
-    excel.Visible = False
-  File "C:\Users\qxz5y3m\excel_code\excel\lib\site-packages\win32com\client\dynamic.py", line 699, in __setattr__
-    raise AttributeError(f"Property '{self._username_}.{attr}' can not be set.")
-AttributeError: Property 'Excel.Application.Visible' can not be set
+  File "c:/Users/qxz5y3m/OneDrive - BMW Group/tx_auto_update2.3.1.2.py", line 147, in _refresh_pivots_in_workbook
+    excel = gencache.EnsureDispatch("Excel.Application")
+  File "C:\Users\qxz5y3m\excel_code\excel\lib\site-packages\win32com\client\gencache.py", line 644, in EnsureDispatch
+    "This COM object can not automate the makepy process - please run makepy manually for this object"
+TypeError: This COM object can not automate the makepy process - please run makepy manually for this object
