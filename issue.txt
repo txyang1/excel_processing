@@ -19,3 +19,81 @@ Traceback (most recent call last):
   File "C:\Users\qxz5y3m\excel_code\excel\lib\site-packages\win32com\client\dynamic.py", line 699, in __setattr__
     raise AttributeError(f"Property '{self._username_}.{attr}' can not be set.")
 AttributeError: Property 'Excel.Application.Visible' can not be set.
+
+import pythoncom
+from win32com.client import Dispatch, constants
+
+def _refresh_pivots_in_workbook(xlsx_path, data_sheet_name):
+    pythoncom.CoInitialize()
+    try:
+        excel = Dispatch("Excel.Application")
+        # 某些环境不允许设置 Visible，捕获忽略即可
+        try:
+            excel.Visible = False
+        except AttributeError:
+            pass
+
+        wb = excel.Workbooks.Open(os.path.abspath(xlsx_path))
+
+        # 定位数据表
+        try:
+            ds = wb.Worksheets(data_sheet_name)
+        except:
+            wb.Close(False)
+            excel.Quit()
+            return
+
+        # 找到表头最后一列、ID 列号
+        header_row = 1
+        last_header_col = ds.Cells(header_row, ds.Columns.Count) \
+                              .End(constants.xlToLeft).Column
+        id_col_idx = None
+        for c in range(1, last_header_col+1):
+            if str(ds.Cells(header_row, c).Value).strip() == "ID":
+                id_col_idx = c
+                break
+        if not id_col_idx:
+            wb.Close(False)
+            excel.Quit()
+            return
+
+        # 用 ID 列 End(xlUp) 定位最后一行
+        last_row = ds.Cells(ds.Rows.Count, id_col_idx) \
+                     .End(constants.xlUp).Row
+        if last_row <= header_row:
+            wb.Close(False)
+            excel.Quit()
+            return
+
+        # 构造新的 SourceData
+        top_left     = ds.Cells(header_row, 1).Address
+        bottom_right = ds.Cells(last_row, last_header_col).Address
+        source_ref   = f"'{data_sheet_name}'!{top_left}:{bottom_right}"
+
+        # 遍历所有工作表的 PivotTable
+        for ws in wb.Worksheets:
+            try:
+                pts = ws.PivotTables()
+                cnt = pts.Count
+            except:
+                continue
+            if cnt == 0:
+                continue
+            for i in range(1, cnt+1):
+                pt = pts.Item(i)
+                try:
+                    cache = wb.PivotCaches().Create(
+                        SourceType=constants.xlDatabase,
+                        SourceData=source_ref
+                    )
+                    pt.ChangePivotCache(cache)
+                    pt.RefreshTable()
+                except:
+                    pass
+
+        wb.Save()
+        wb.Close(False)
+        excel.Quit()
+    finally:
+        pythoncom.CoUninitialize()
+
