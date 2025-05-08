@@ -20,80 +20,93 @@ Traceback (most recent call last):
     raise AttributeError(f"Property '{self._username_}.{attr}' can not be set.")
 AttributeError: Property 'Excel.Application.Visible' can not be set.
 
-import pythoncom
 from win32com.client import Dispatch, constants
 
 def _refresh_pivots_in_workbook(xlsx_path, data_sheet_name):
     pythoncom.CoInitialize()
+    excel = None
+    wb    = None
     try:
         excel = Dispatch("Excel.Application")
-        # 某些环境不允许设置 Visible，捕获忽略即可
+        # 有些环境不支持 Visible，忽略错误
         try:
             excel.Visible = False
         except AttributeError:
             pass
 
-        wb = excel.Workbooks.Open(os.path.abspath(xlsx_path))
+        # 1) 尝试打开工作簿
+        try:
+            wb = excel.Workbooks.Open(os.path.abspath(xlsx_path))
+        except Exception as e:
+            print(f"❌ 无法打开文件 {xlsx_path}：{e}")
+            return
 
-        # 定位数据表
+        # 2) 定位数据表
         try:
             ds = wb.Worksheets(data_sheet_name)
-        except:
-            wb.Close(False)
-            excel.Quit()
+        except Exception:
+            print(f"❌ 找不到工作表 “{data_sheet_name}”")
             return
 
-        # 找到表头最后一列、ID 列号
+        # 3) 找 ID 列
         header_row = 1
-        last_header_col = ds.Cells(header_row, ds.Columns.Count) \
-                              .End(constants.xlToLeft).Column
-        id_col_idx = None
-        for c in range(1, last_header_col+1):
+        last_col   = ds.Cells(header_row, ds.Columns.Count) \
+                       .End(constants.xlToLeft).Column
+        id_col = None
+        for c in range(1, last_col+1):
             if str(ds.Cells(header_row, c).Value).strip() == "ID":
-                id_col_idx = c
+                id_col = c
                 break
-        if not id_col_idx:
-            wb.Close(False)
-            excel.Quit()
+        if not id_col:
+            print("❌ 找不到 “ID” 列，跳过")
             return
 
-        # 用 ID 列 End(xlUp) 定位最后一行
-        last_row = ds.Cells(ds.Rows.Count, id_col_idx) \
-                     .End(constants.xlUp).Row
+        # 4) 计算最后一行
+        last_row = ds.Cells(ds.Rows.Count, id_col) \
+                       .End(constants.xlUp).Row
         if last_row <= header_row:
-            wb.Close(False)
-            excel.Quit()
+            print("⚠️ ‘ID’ 列没数据，跳过")
             return
 
-        # 构造新的 SourceData
-        top_left     = ds.Cells(header_row, 1).Address
-        bottom_right = ds.Cells(last_row, last_header_col).Address
-        source_ref   = f"'{data_sheet_name}'!{top_left}:{bottom_right}"
+        # 5) 构造 SourceData
+        tl = ds.Cells(header_row, 1).Address
+        br = ds.Cells(last_row, last_col).Address
+        src = f"'{data_sheet_name}'!{tl}:{br}"
+        print(f"→ 新数据源：{src}")
 
-        # 遍历所有工作表的 PivotTable
+        # 6) 遍历并刷新所有 PivotTable
         for ws in wb.Worksheets:
             try:
                 pts = ws.PivotTables()
-                cnt = pts.Count
-            except:
+            except Exception:
                 continue
-            if cnt == 0:
+            if pts.Count == 0:
                 continue
-            for i in range(1, cnt+1):
+
+            for i in range(1, pts.Count+1):
                 pt = pts.Item(i)
                 try:
                     cache = wb.PivotCaches().Create(
                         SourceType=constants.xlDatabase,
-                        SourceData=source_ref
+                        SourceData=src
                     )
                     pt.ChangePivotCache(cache)
                     pt.RefreshTable()
-                except:
-                    pass
+                except Exception as e:
+                    print(f"  ❌ 刷新 {pt.Name} 失败：{e}")
 
-        wb.Save()
-        wb.Close(False)
-        excel.Quit()
+        # 7) 保存
+        try:
+            wb.Save()
+        except Exception as e:
+            print(f"❌ 保存失败：{e}")
+
     finally:
+        # 8) 关闭资源（只有在对象非 None 时才调用）
+        if wb:
+            try: wb.Close(False)
+            except: pass
+        if excel:
+            try: excel.Quit()
+            except: pass
         pythoncom.CoUninitialize()
-
