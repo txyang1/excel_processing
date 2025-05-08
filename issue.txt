@@ -1,7 +1,32 @@
-PTraceback (most recent call last):
-  File "refresh_pivot2.py", line 66, in <module>
-    refresh_pivots(sys.argv[1])
-  File "refresh_pivot2.py", line 53, in refresh_pivots
-    pt.ChangePivotCache(cache)
-  File "<COMObject <unknown>>", line 2, in ChangePivotCache
-pywintypes.com_error: (-2147352567, 'Exception occurred.', (0, 'Microsoft Excel', "This command requires at least two rows of source data. You cannot use the command on a selection in only one row. Try the following:\n\n• If you're using an advanced filter, select a range of cells that contains at least two rows of data. Then click the Advanced Filter command again.\n• If you're creating a PivotTable report or PivotChart report, type a cell reference or select a range that includes at least two rows of data.", 'xlmain11.chm', 0, -2147024809), None)
+Exception in thread Thread-1:
+Traceback (most recent call last):
+  File "C:\Users\qxz5y3m\excel_code\excel\lib\site-packages\win32com\client\dynamic.py", line 80, in _GetGoodDispatch
+    IDispatch = pythoncom.connect(IDispatch)
+pywintypes.com_error: (-2147221008, 'CoInitialize has not been called.', None, None)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Program Files\Python37\lib\threading.py", line 926, in _bootstrap_inner
+    self.run()
+  File "C:\Users\qxz5y3m\excel_code\excel\lib\site-packages\watchdog\observers\api.py", line 204, in run
+    self.dispatch_events(self.event_queue)
+  File "C:\Users\qxz5y3m\excel_code\excel\lib\site-packages\watchdog\observers\api.py", line 380, in dispatch_events
+    handler.dispatch(event)
+  File "C:\Users\qxz5y3m\excel_code\excel\lib\site-packages\watchdog\events.py", line 283, in dispatch
+    }[event.event_type](event)
+  File "c:/Users/qxz5y3m/OneDrive - BMW Group/tx_auto_update2.3.1.2.py", line 432, in on_created
+    self._maybe_update(event.src_path)
+  File "c:/Users/qxz5y3m/OneDrive - BMW Group/tx_auto_update2.3.1.2.py", line 444, in _maybe_update
+    update_excel(path)
+  File "c:/Users/qxz5y3m/OneDrive - BMW Group/tx_auto_update2.3.1.2.py", line 425, in update_excel
+    _refresh_pivots_in_workbook(orig_fp, sheet)
+  File "c:/Users/qxz5y3m/OneDrive - BMW Group/tx_auto_update2.3.1.2.py", line 63, in _refresh_pivots_in_workbook
+    excel = win32com.client.Dispatch("Excel.Application")
+  File "C:\Users\qxz5y3m\excel_code\excel\lib\site-packages\win32com\client\__init__.py", line 114, in Dispatch
+    dispatch, userName = dynamic._GetGoodDispatchAndUserName(dispatch, userName, clsctx)
+  File "C:\Users\qxz5y3m\excel_code\excel\lib\site-packages\win32com\client\dynamic.py", line 100, in _GetGoodDispatchAndUserName
+    return (_GetGoodDispatch(IDispatch, clsctx), userName)
+  File "C:\Users\qxz5y3m\excel_code\excel\lib\site-packages\win32com\client\dynamic.py", line 83, in _GetGoodDispatch
+    IDispatch, None, clsctx, pythoncom.IID_IDispatch
+pywintypes.com_error: (-2147221008, 'CoInitialize has not been called.', None, None)
