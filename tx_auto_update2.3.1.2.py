@@ -12,7 +12,7 @@ from openpyxl.utils import get_column_letter
 from watchdog.observers.polling import PollingObserver as Observer
 from datetime import datetime
 import pythoncom
-from win32com.client import gencache, constants 
+import win32com.client
 
 # === 加载配置 ===
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -55,6 +55,8 @@ def find_last_data_row(ws, key_col):
         if ws.cell(row=r, column=key_col).value not in (None, ""):
             return r
     return 1
+
+
 
 def _refresh_pivots_in_workbook(xlsx_path, data_sheet_name):
     """
@@ -132,11 +134,10 @@ def _refresh_pivots_in_workbook(xlsx_path, data_sheet_name):
         wb.Save()
         wb.Close(False)
         excel.Quit()
-        print("✅ COM: 所有 PivotTable 已更新并刷新\n")
+        print("✅ COM: 所有 PivotTable 已更新并刷新,结果保存至原表 {xlsx_path}\n")
     finally:
         pythoncom.CoUninitialize()
 
-    
     
 
 def update_excel(new_fp):
@@ -426,9 +427,10 @@ def update_excel(new_fp):
             ws.cell(r, rej_idx).value = 1 if (br_val not in (None, "") and "New" in ph_val) else 0
     
     # 保存
-    wb.save(orig_fp)
-    print(f"[{ts}] 更新完成，保存至原表 {orig_fp}")
-    time.sleep(10)
+    #wb.save(orig_fp)
+    #print(f"[{ts}] 更新完成，保存至原表 {orig_fp}")
+    print(f"[{ts}] 更新完成，下一步更新PivotTable")
+    time.sleep(1)
     # -------- PivotTable 自动刷新 ----------------
     _refresh_pivots_in_workbook(orig_fp, sheet)
     
