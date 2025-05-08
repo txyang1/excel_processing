@@ -53,7 +53,7 @@ def find_last_data_row(ws, key_col):
             return r
     return 1
 
-def _refresh_pivots_in_workbook(xlsx_path, data_sheet_name):
+'''def _refresh_pivots_in_workbook(xlsx_path, data_sheet_name):
     """
     用 COM 打开 xlsx_path，基于 data_sheet_name 的 ID 列范围
     更新并刷新整本工作簿中所有 PivotTable。
@@ -127,7 +127,98 @@ def _refresh_pivots_in_workbook(xlsx_path, data_sheet_name):
     wb.Save()
     wb.Close(False)
     excel.Quit()
-    print("✅ COM: 所有 PivotTable 已更新并刷新\n")
+    print("✅ COM: 所有 PivotTable 已更新并刷新\n")'''
+
+def _refresh_pivots_in_workbook(xlsx_path, data_sheet_name):
+    """
+    用 COM 打开 xlsx_path，基于 data_sheet_name 的 ID 列范围
+    更新并刷新整本工作簿中所有 PivotTable。
+    """
+    # 1) 初始化 COM
+    pythoncom.CoInitialize()
+    try:
+        # 2) 早绑定创建 Excel 对象
+        excel = gencache.EnsureDispatch("Excel.Application")
+        try:
+            excel.Visible = False
+        except AttributeError:
+            # 某些环境下不可写，忽略即可
+            pass
+
+        wb = excel.Workbooks.Open(os.path.abspath(xlsx_path))
+
+        # 定位数据表
+        try:
+            ds = wb.Worksheets(data_sheet_name)
+        except Exception:
+            print(f"❌ COM: 找不到数据表 “{data_sheet_name}”")
+            wb.Close(False)
+            excel.Quit()
+            return
+
+        # 扫描表头最后一列
+        header_row = 1
+        last_header_col = ds.Cells(header_row, ds.Columns.Count) \
+                            .End(constants.xlToLeft).Column
+
+        # 找 “ID” 列号
+        id_col_idx = None
+        for c in range(1, last_header_col+1):
+            if str(ds.Cells(header_row, c).Value).strip() == "ID":
+                id_col_idx = c
+                break
+        if not id_col_idx:
+            print("❌ COM: 未找到 “ID” 列，跳过 Pivot 刷新")
+            wb.Close(False)
+            excel.Quit()
+            return
+
+        # 用 ID 列 End(xlUp) 定位最后一行
+        last_row = ds.Cells(ds.Rows.Count, id_col_idx) \
+                    .End(constants.xlUp).Row
+        if last_row <= header_row:
+            print("⚠️ COM: “ID” 列无数据，跳过 Pivot 刷新")
+            wb.Close(False)
+            excel.Quit()
+            return
+
+        # 构造 SourceData
+        top_left     = ds.Cells(header_row, 1).Address
+        bottom_right = ds.Cells(last_row, last_header_col).Address
+        source_ref   = f"'{data_sheet_name}'!{top_left}:{bottom_right}"
+        print(f"  COM: 新 Pivot 数据源范围：{source_ref}")
+
+        # 遍历整本工作簿所有 PivotTable
+        for ws in wb.Worksheets:
+            try:
+                pts = ws.PivotTables()
+                cnt = pts.Count
+            except Exception:
+                continue
+            if cnt == 0:
+                continue
+
+            print(f"  ▶ COM: 工作表 [{ws.Name}] 有 {cnt} 个 PivotTable，开始更新…")
+            for i in range(1, cnt+1):
+                pt = pts.Item(i)
+                try:
+                    cache = wb.PivotCaches().Create(
+                        SourceType=constants.xlDatabase,
+                        SourceData=source_ref
+                    )
+                    pt.ChangePivotCache(cache)
+                    pt.RefreshTable()
+                    print(f"    ✔️ 已刷新 PivotTable [{pt.Name}]")
+                except Exception as e:
+                    print(f"    ❌ 刷新 [{pt.Name}] 失败：{e}")
+
+        wb.Save()
+        wb.Close(False)
+        excel.Quit()
+        print("✅ COM: 所有 PivotTable 已更新并刷新\n")
+
+    finally:
+        pythoncom.CoUninitialize()
 
 def update_excel(new_fp):
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
