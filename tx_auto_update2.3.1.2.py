@@ -16,7 +16,7 @@ import win32com.client
 
 # === 加载配置 ===
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-with open(os.path.join(BASE_DIR, "unified_config_auto2.json"), 'r', encoding='utf-8') as f:
+with open(os.path.join(BASE_DIR, "unified_config_auto3.json"), 'r', encoding='utf-8') as f:
     cfg = json.load(f)
 
 folders    = cfg['folders']
@@ -134,7 +134,7 @@ def _refresh_pivots_in_workbook(xlsx_path, data_sheet_name):
         wb.Save()
         wb.Close(False)
         excel.Quit()
-        print("✅ COM: 所有 PivotTable 已更新并刷新,结果保存至原表 {xlsx_path}\n")
+        print(f"✅ COM: 所有 PivotTable 已更新并刷新,结果保存至原表 {xlsx_path}\n")
     finally:
         pythoncom.CoUninitialize()
 
@@ -172,7 +172,7 @@ def update_excel(new_fp):
     df_new = pd.read_excel(new_fp) if read_meth=="excel" else pd.read_csv(new_fp)
 
     #添加判定，如果是Octane先清除之前的颜色
-    clear_old = "Y" if src_cfg["pattern"] == "Octane" else "N"
+    clear_old = "Y" if src_cfg["pattern"] == "Octane" else "N"#自定义时请注释掉这一行
     print(f"判断是否清洗就更新颜色：",clear_old)
 
     # 打开原表
@@ -180,7 +180,7 @@ def update_excel(new_fp):
     ws = wb[sheet]
 
     # 清除旧高亮
-    if clear_old:
+    if clear_old == "Y":
         green = {"8ED973","008ED973","FF8ED973"}
         blue  = {'FFADD8E6','00ADD8E6','ADD8E6'}
         gray  = {'FFC0C0C0','00C0C0C0','C0C0C0'}
@@ -427,17 +427,21 @@ def update_excel(new_fp):
             ws.cell(r, rej_idx).value = 1 if (br_val not in (None, "") and "New" in ph_val) else 0
     
     # 保存
-    #wb.save(orig_fp)
+    wb.save(orig_fp)
     #print(f"[{ts}] 更新完成，保存至原表 {orig_fp}")
-    print(f"[{ts}] 更新完成，下一步更新PivotTable")
-    time.sleep(1)
+    print(f"[{ts}] 更新完成并保存到原表{orig_fp}，下一步更新PivotTable")
+    time.sleep(10)
     # -------- PivotTable 自动刷新 ----------------
     _refresh_pivots_in_workbook(orig_fp, sheet)
+    time.sleep(10)
     
 
 class FolderHandler(FileSystemEventHandler):
-    def __init__(self, folders):
+    def __init__(self, folders, debounce_seconds=5):
         self.folders = folders
+        # 用来记录上次对同一路径触发更新的时间戳
+        self._last_run = {}
+        self._debounce = debounce_seconds
 
     def on_created(self, event):
         self._maybe_update(event.src_path)
@@ -448,11 +452,23 @@ class FolderHandler(FileSystemEventHandler):
         self._maybe_update(event.dest_path)
 
     def _maybe_update(self, path):
+        # 只处理文件
         if os.path.isdir(path):
             return
-        fld = os.path.basename(os.path.dirname(path))
-        if fld in (self.folders['jira_dir'], self.folders['octane_dir']):
-            update_excel(path)
+        dir_name = os.path.basename(os.path.dirname(path))
+        if dir_name not in (self.folders['jira_dir'], self.folders['octane_dir']):
+            return
+
+        now = time.time()
+        last = self._last_run.get(path, 0)
+        # 如果上次更新离现在小于阈值，就跳过
+        if now - last < self._debounce:
+            print(f"⚠️ 去抖：忽略短时间内重复触发 {path}")
+            return
+
+        # 记录本次时间，执行更新
+        self._last_run[path] = now
+        update_excel(path)
 
 
 def main():
@@ -460,7 +476,7 @@ def main():
         os.makedirs(d, exist_ok=True)
 
     observer = Observer()
-    handler  = FolderHandler(folders)
+    handler  = FolderHandler(folders, debounce_seconds=5)
     observer.schedule(handler, path=JIRA_DIR, recursive=False)
     observer.schedule(handler, path=OCTANE_DIR, recursive=False)
     observer.start()
